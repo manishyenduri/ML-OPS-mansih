@@ -40,3 +40,4 @@ jobs:
         with:
           name: ml-artifacts-${{ matrix.python }}-${{ github.run_id }}
           path: artifacts
+          retention-days: 30
