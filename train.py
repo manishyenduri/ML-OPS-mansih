@@ -1,58 +1,30 @@
-#!/usr/bin/env python3
-"""
-Usage:
-    python run_model.py --input "[5.1, 3.5, 1.4, 0.2]"
-"""
-
-import argparse
-import json
+import os
 from pathlib import Path
-import numpy as np
 import joblib
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
 
-MODEL_PATH = Path("artifacts/model.pkl")
-
-
-def load_model():
-    if not MODEL_PATH.exists():
-        raise FileNotFoundError(f"❌ Model file not found: {MODEL_PATH}")
-    return joblib.load(MODEL_PATH)
-
-
-def parse_input(input_str):
-    try:
-        features = json.loads(input_str)
-        if not isinstance(features, list):
-            raise ValueError("Input must be a list")
-        return np.array(features).reshape(1, -1)
-    except json.JSONDecodeError:
-        raise ValueError(
-            '❌ Invalid input. Use JSON list, e.g. --input "[5.1,3.5,1.4,0.2]"'
-        )
+ARTIFACTS_DIR = Path("artifacts")
+MODEL_PATH = ARTIFACTS_DIR / "model.pkl"
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    # ✅ Create artifacts folder
+    os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
-    # ✅ Make input optional (important for CI)
-    parser.add_argument(
-        "--input",
-        default="[5.1, 3.5, 1.4, 0.2]",
-        help="Feature list as JSON string"
-    )
+    # ✅ Load sample data (replace with your dataset later)
+    data = load_iris()
+    X, y = data.data, data.target
 
-    args = parser.parse_args()
+    # ✅ Train model
+    model = RandomForestClassifier()
+    model.fit(X, y)
 
-    # Parse input safely
-    X = parse_input(args.input)
+    # ✅ Save model
+    joblib.dump(model, MODEL_PATH)
 
-    # Load model
-    model = load_model()
-
-    # Predict
-    pred = model.predict(X)
-
-    print(json.dumps({"prediction": pred.tolist()}))
+    print(f"✅ Model saved at {MODEL_PATH}")
 
 
 if __name__ == "__main__":
